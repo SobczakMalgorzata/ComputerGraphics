@@ -1,0 +1,114 @@
+﻿<Window x:Class="FunctionFilters.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MainWindow" Height="600" Width="800" MinHeight="600" MinWidth="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="20"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Menu  Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <MenuItem Name="File" Height="20" Width="Auto" Header="File">
+                <MenuItem Name="ImageLoad" Header="Load Image" Click="LoadImage"/>
+                <MenuItem Name="Save" Header="Save" Click="SaveImage" />
+                <MenuItem Name="SaveAs" Header="Save as" Click="SaveImageAs" />
+            </MenuItem>
+            <MenuItem Name="FunctionFilters" Height="20" Width="Auto" Header="Function Filters">
+                <MenuItem Name="InversionFilter" Header="Inversion Filter" Click="Inversion"/>
+                <MenuItem Name="GammaFilter" Header="Gamma Filter" Click="Gamma" />
+                <MenuItem Name="BrightnesCorrection" Header="Brightnes Correction" Click="Brightnes"/>
+                <MenuItem Name="ContrastEnchancement" Header="Contrast Enchancement" Click="Contrast"/>
+            </MenuItem>
+            <MenuItem Name="ConvolutionFilters" Height="20" Width="Auto" Header="Convolution Filters">
+                <MenuItem Name="Blur" Header="Blur" Click="fBlur"/>
+                <MenuItem Name="GaussianSmoothing" Header="Gaussian Smoothing" Click="fGaussianSmotth"/>
+                <MenuItem Name="SharpenFilter" Header="Sharpen Filter" Click="fSharpen"/>
+                <MenuItem Name="EdgeDetection" Header="Edge Detection" Click="fedgeDetection"/>
+                <MenuItem Name="Emboss" Header="Emboss" Click="fEmboss"/>
+            </MenuItem>
+            <MenuItem Name="GrayScale" Width="Auto" Header="Gray Scale">
+                <MenuItem Name="GrayScaleLightness" Header="Gray Scale Lightness" Click="GSLightness"/>
+                <MenuItem Name="GrayScaleAverage" Header="Gray Scale Average" Click="GSAverage" />
+                <MenuItem Name="GrayScaleLuminosity" Header="Gray Scale Luminosity" Click="GSLuminosity" />
+            </MenuItem>
+            <MenuItem Name="Dithering" Width="Auto" Header="Dithering">
+                <MenuItem Name="DitheringAverage" Header="Average Dithering" Click="fAverageDithering"/>
+            </MenuItem>
+            <MenuItem Name="Editor" Width="Auto" Header="Editor" Click="EditorMode"/>
+        </Menu>
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Name="ImageEditor" Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Image Name="board" Grid.Column="0"></Image>
+            <Grid Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="360"/>
+                </Grid.RowDefinitions>
+                <Image Name="board2" Grid.Row="0"></Image>
+                
+                <TabControl Grid.Row="2">
+                    <TabItem Header="Function Filtering">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="300"/>
+                                <RowDefinition Height="25"/>
+                            </Grid.RowDefinitions>
+                            <Canvas Name="InputFunction" Background="LightGray" Height="256" Width="256" Grid.Row="0">
+                                <Canvas.LayoutTransform>
+                                    <ScaleTransform ScaleX="1" ScaleY="-1" CenterX="0" CenterY="0" />
+                                </Canvas.LayoutTransform>
+                            </Canvas>
+                            <Grid Grid.Row="1">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <ComboBox Grid.Column="0" Height="25" Name="FilterReading">
+                                    <ComboBoxItem Content="Identity Filter" Name="IdentityFilterCB" Selected="IdentityFilterApply"></ComboBoxItem>
+                                    <ComboBoxItem Content="Inversion Filter" Name="InversionFilterCB" Selected="InversionFilterApply"></ComboBoxItem>
+                                    <ComboBoxItem Content="Brightness Correction" Name="BrightnessCorrectionCB" Selected="BrightnessCorrectionApply"></ComboBoxItem>
+                                    <ComboBoxItem Content="Contrast Enchancement" Name="ContrastEnchancementCB" Selected="ContrastEnchancementApply"></ComboBoxItem>
+                                </ComboBox>
+                                <Button Grid.Column="1" Name="CustomFilterSubmission" Height="25" Click="CustomFilterApply">Apply Filter</Button>
+                            </Grid>
+                        </Grid>
+                    </TabItem>
+
+                    <TabItem Header="Chanel Selection">
+                        <Grid Grid.Row="1">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <CheckBox Name="chanelA" Grid.Column="1" Grid.Row="0" IsChecked="True"/>
+                            <CheckBox Name="chanelR" Grid.Column="1" Grid.Row="1" IsChecked="True"/>
+                            <CheckBox Name="chanelG" Grid.Column="1" Grid.Row="2" IsChecked="True"/>
+                            <CheckBox Name="chanelB" Grid.Column="1" Grid.Row="3" IsChecked="True"/>
+                            <Label Grid.Column="0" Grid.Row="0">Alpha</Label>
+                            <Label Grid.Column="0" Grid.Row="1">Red</Label>
+                            <Label Grid.Column="0" Grid.Row="2">Green</Label>
+                            <Label Grid.Column="0" Grid.Row="3">Blue</Label>
+                            <TextBox Grid.Column="0" Grid.Row="4" Name="GammaCoeficient" Text="3"></TextBox>
+                            <TextBox Grid.Column="0" Grid.Row="5" Name="DitheringCoeficient" Text="2"></TextBox>
+                            <Label Grid.Column="1" Grid.Row="4">Gamma Coeficient</Label>
+                            <Label Grid.Column="1" Grid.Row="5">Dithering Coeficient</Label>
+                        </Grid>
+                    </TabItem>
+                </TabControl> 
+                
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>
