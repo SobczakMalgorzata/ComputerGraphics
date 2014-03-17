@@ -29,6 +29,7 @@ namespace FunctionFilters
         int[, ,] MatrixZero;
         int PointNumber;
         string currentimage;
+        Uri currentImage;
         int myExt;
 
         int[] MIdentity = new int[256];
@@ -148,14 +149,33 @@ namespace FunctionFilters
                 "Portable Network Graphic (*.gif)|*.gif" ;
             if (op.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
-                currentimage = op.FileName;
-                this.board.Source = new BitmapImage(new Uri(op.FileName));
-                this.board2.Source = new BitmapImage(new Uri(op.FileName));
-                myExt = op.FilterIndex;
-                img = new Bitmap(currentimage);
+                System.IO.Stream myStream = null;
 
+                try
+                {
+                    if ((myStream = op.OpenFile()) != null)
+                    {
+                        using (myStream)
+                        {
+                            currentimage = op.FileName; 
+                            currentImage = new Uri(op.FileName);
+                            img = new Bitmap(myStream);
+                            this.board.Source = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(img.GetHbitmap(), IntPtr.Zero, System.Windows.Int32Rect.Empty, BitmapSizeOptions.FromWidthAndHeight(img.Width, img.Height));
+                            this.board2.Source = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(img.GetHbitmap(), IntPtr.Zero, System.Windows.Int32Rect.Empty, BitmapSizeOptions.FromWidthAndHeight(img.Width, img.Height));
+                            myExt = op.FilterIndex;
+
+                            // Insert code to read the stream here.
+                            getRGB();
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Windows.MessageBox.Show("Error: Could not read file from disk. Original error: " + ex.Message);
+                }
+                //img = new Bitmap(currentimage);
+                //myStream.Dispose();
                 
-                getRGB();
             }
         }
 
@@ -228,6 +248,113 @@ namespace FunctionFilters
             
             
         }
+        
+        private void SaveImage(object sender, RoutedEventArgs e)
+        {
+            //if (System.IO.File.Exists(currentimage.ToString()))
+                //System.IO.File.Delete(currentimage.ToString());
+
+            //bmp1.Save("c:\\t.jpg", System.Drawing.Imaging.ImageFormat.Jpeg);
+            //string saveit = currentimage.ToString();
+            
+                if (img != null)
+                {
+                    if (myExt == 1)
+                    {
+                        try
+                        {
+                            string y = currentImage.LocalPath;
+                            bool x = System.IO.File.Exists(y);
+                            if (x)
+                                System.IO.File.Delete(y);
+                            img.Save(currentimage, System.Drawing.Imaging.ImageFormat.Bmp);
+                            this.board2.Source = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(img.GetHbitmap(), IntPtr.Zero, System.Windows.Int32Rect.Empty, BitmapSizeOptions.FromWidthAndHeight(img.Width, img.Height));
+                            
+                        }
+                        catch (Exception)
+                        {
+                            System.Windows.MessageBox.Show("There was a problem saving the file." +
+                                "Check the file permissions.");
+                        }
+
+                        //img.Save(myStream, System.Drawing.Imaging.ImageFormat.Bmp);
+                    }
+                    if (myExt == 2)
+                    {
+                        string y = currentImage.LocalPath;
+                        bool x = System.IO.File.Exists(y);
+                        if (x)
+                            System.IO.File.Delete(y);
+                        img.Save(currentimage, System.Drawing.Imaging.ImageFormat.Jpeg);
+                    }
+                    if (myExt == 3)
+                    {
+                        string y = currentImage.LocalPath;
+                        bool x = System.IO.File.Exists(y);
+                        if (x)
+                            System.IO.File.Delete(y);
+                        img.Save(currentimage, System.Drawing.Imaging.ImageFormat.Png);
+                    }
+                    if (myExt == 4)
+                    {
+                        string y = currentImage.LocalPath;
+                        bool x = System.IO.File.Exists(y);
+                        if (x)
+                            System.IO.File.Delete(y);
+                        img.Save(currentimage, System.Drawing.Imaging.ImageFormat.Gif);
+                    }
+                }
+            
+
+        }
+
+        private void SaveImageAs(object sender, RoutedEventArgs e)
+        {
+            Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog();
+            dlg.FileName = "Image";
+            dlg.DefaultExt = ".bmp";
+            dlg.Title = "Save As";
+            dlg.Filter = "Bitmap Image (.bmp)|*.bmp|"+
+                "JPEG (*.jpg)|*.jpg|" +
+                "Portable Network Graphic (*.png)|*.png|" +
+                "Portable Network Graphic (*.gif)|*.gif";
+            if (dlg.ShowDialog() == true)
+            {
+
+                if (dlg.FilterIndex == 1) 
+                {
+                    string filename = dlg.FileName;
+                    img.Save(filename, System.Drawing.Imaging.ImageFormat.Bmp);
+                    currentimage = filename;
+                    myExt = dlg.FilterIndex;
+                }
+
+                if (dlg.FilterIndex == 2)
+                {
+                    string filename = dlg.FileName;
+                    img.Save(filename, System.Drawing.Imaging.ImageFormat.Jpeg);
+                    currentimage = filename;
+                    myExt = dlg.FilterIndex;
+                }
+                if (dlg.FilterIndex == 3)
+                {
+
+                    string filename = dlg.FileName;
+                    img.Save(filename, System.Drawing.Imaging.ImageFormat.Png);
+                    currentimage = filename;
+                    myExt = dlg.FilterIndex;
+                }
+                if (dlg.FilterIndex == 4)
+                {
+
+                    string filename = dlg.FileName;
+                    img.Save(filename, System.Drawing.Imaging.ImageFormat.Gif);
+                    currentimage = filename;
+                    myExt = dlg.FilterIndex;
+                }
+            }
+        }
+
         public void GraphPainting(int[] f, int p)
         {
             System.Windows.Point a1 = new System.Windows.Point(0, 0);
@@ -562,11 +689,6 @@ namespace FunctionFilters
             
         }
 
-        private void grayScaleFull(object sender, RoutedEventArgs e)
-        {
-
-        }
-
         private void GSLightness(object sender, RoutedEventArgs e)
         {
 
@@ -620,80 +742,7 @@ namespace FunctionFilters
 
         }
 
-        private void SaveImage(object sender, RoutedEventArgs e)
-        {
-            //if (System.IO.File.Exists(currentimage.ToString()))
-                //System.IO.File.Delete(currentimage.ToString());
-
-            //bmp1.Save("c:\\t.jpg", System.Drawing.Imaging.ImageFormat.Jpeg);
-            //string saveit = currentimage.ToString();
-            
-                if (img != null)
-                {
-                    if (myExt == 1)
-                    {
-                        bool x = System.IO.File.Exists("currentimage");
-                        if (x)
-                            System.IO.File.Delete("currentimage");
-                        img.Save(currentimage, System.Drawing.Imaging.ImageFormat.Bmp);
-                    }
-                    if (myExt == 2)
-                        img.Save(currentimage, System.Drawing.Imaging.ImageFormat.Jpeg);
-                    if (myExt == 3)
-                        img.Save(currentimage, System.Drawing.Imaging.ImageFormat.Png);
-                    if (myExt == 4)
-                        img.Save(currentimage, System.Drawing.Imaging.ImageFormat.Gif);
-                }
-            
-
-        }
-
-        private void SaveImageAs(object sender, RoutedEventArgs e)
-        {
-            Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog();
-            dlg.FileName = "Image";
-            dlg.DefaultExt = ".bmp";
-            dlg.Title = "Save As";
-            dlg.Filter = "Bitmap Image (.bmp)|*.bmp|"+
-                "JPEG (*.jpg)|*.jpg|" +
-                "Portable Network Graphic (*.png)|*.png|" +
-                "Portable Network Graphic (*.gif)|*.gif";
-            if (dlg.ShowDialog() == true)
-            {
-
-                if (dlg.FilterIndex == 1) 
-                { 
-                    string filename = dlg.FileName;
-                    img.Save(filename, System.Drawing.Imaging.ImageFormat.Bmp);
-                    currentimage = filename;
-                    myExt = dlg.FilterIndex;
-                }
-
-                if (dlg.FilterIndex == 2)
-                {
-                    string filename = dlg.FileName;
-                    img.Save(filename, System.Drawing.Imaging.ImageFormat.Jpeg);
-                    currentimage = filename;
-                    myExt = dlg.FilterIndex;
-                }
-                if (dlg.FilterIndex == 3)
-                {
-
-                    string filename = dlg.FileName;
-                    img.Save(filename, System.Drawing.Imaging.ImageFormat.Png);
-                    currentimage = filename;
-                    myExt = dlg.FilterIndex;
-                }
-                if (dlg.FilterIndex == 4)
-                {
-
-                    string filename = dlg.FileName;
-                    img.Save(filename, System.Drawing.Imaging.ImageFormat.Gif);
-                    currentimage = filename;
-                    myExt = dlg.FilterIndex;
-                }
-            }
-        }
+        
 
         private void fAverageDithering(object sender, RoutedEventArgs e)
         {
