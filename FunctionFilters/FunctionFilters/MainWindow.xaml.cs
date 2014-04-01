@@ -15,6 +15,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Forms;
 using System.Drawing;
+using System.Windows.Media.Media3D;
 
 namespace FunctionFilters
 {
@@ -23,11 +24,10 @@ namespace FunctionFilters
     /// </summary>
     public partial class MainWindow : Window
     {
-        bool editmode = false;
+        
         public Bitmap img;
         int[, ,] Matrix;
         int[, ,] MatrixZero;
-        int PointNumber;
         string currentimage;
         Uri currentImage;
         int myExt;
@@ -65,7 +65,6 @@ namespace FunctionFilters
                 {
                     MCustomFunction[i, h]=255;
                 }
-
                 MGamma[i] = i;
                 MIdentityPoints[i] = -1;
                 MInversionPoints[i] = -1;
@@ -94,9 +93,7 @@ namespace FunctionFilters
                 {
                     MContrast[i] = 255;
                 }
-
             }
-
             MIdentityPoints[0] = 0;
             MIdentityPoints[255] = 255;
             MInversionPoints[0] = 255;
@@ -150,7 +147,6 @@ namespace FunctionFilters
             if (op.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 System.IO.Stream myStream = null;
-
                 try
                 {
                     if ((myStream = op.OpenFile()) != null)
@@ -163,8 +159,6 @@ namespace FunctionFilters
                             this.board.Source = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(img.GetHbitmap(), IntPtr.Zero, System.Windows.Int32Rect.Empty, BitmapSizeOptions.FromWidthAndHeight(img.Width, img.Height));
                             this.board2.Source = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(img.GetHbitmap(), IntPtr.Zero, System.Windows.Int32Rect.Empty, BitmapSizeOptions.FromWidthAndHeight(img.Width, img.Height));
                             myExt = op.FilterIndex;
-
-                            // Insert code to read the stream here.
                             getRGB();
                         }
                     }
@@ -173,25 +167,11 @@ namespace FunctionFilters
                 {
                     System.Windows.MessageBox.Show("Error: Could not read file from disk. Original error: " + ex.Message);
                 }
-                //img = new Bitmap(currentimage);
-                //myStream.Dispose();
-                
+                myStream.Dispose();    
             }
         }
 
-        private void EditorMode(object sender, RoutedEventArgs e)
-        {
-            if (editmode == false)
-            {
-                ImageEditor.Width = new GridLength(1, GridUnitType.Star);
-                editmode = true;
-            }
-            else
-            {
-                ImageEditor.Width = new GridLength(0);
-                editmode = false;
-            }
-        }
+        
         public void getRGB()
         {
             Matrix = new int[img.Width, img.Height, 4];
@@ -245,67 +225,57 @@ namespace FunctionFilters
                 }
             }
             this.board.Source = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(img.GetHbitmap(), IntPtr.Zero, System.Windows.Int32Rect.Empty, BitmapSizeOptions.FromWidthAndHeight(img.Width, img.Height));
-            
-            
         }
         
         private void SaveImage(object sender, RoutedEventArgs e)
         {
-            //if (System.IO.File.Exists(currentimage.ToString()))
-                //System.IO.File.Delete(currentimage.ToString());
-
-            //bmp1.Save("c:\\t.jpg", System.Drawing.Imaging.ImageFormat.Jpeg);
-            //string saveit = currentimage.ToString();
-            
-                if (img != null)
+            if (img != null)
+            {
+                if (myExt == 1)
                 {
-                    if (myExt == 1)
+                    try
                     {
-                        try
-                        {
-                            string y = currentImage.LocalPath;
-                            bool x = System.IO.File.Exists(y);
-                            if (x)
-                                System.IO.File.Delete(y);
-                            img.Save(currentimage, System.Drawing.Imaging.ImageFormat.Bmp);
-                            this.board2.Source = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(img.GetHbitmap(), IntPtr.Zero, System.Windows.Int32Rect.Empty, BitmapSizeOptions.FromWidthAndHeight(img.Width, img.Height));
-                            
-                        }
-                        catch (Exception)
-                        {
-                            System.Windows.MessageBox.Show("There was a problem saving the file." +
-                                "Check the file permissions.");
-                        }
+                        string y = currentImage.LocalPath;
+                        bool x = System.IO.File.Exists(y);
+                        if (x)
+                            System.IO.File.Delete(y);
+                        img.Save(currentimage, System.Drawing.Imaging.ImageFormat.Bmp);
+                        this.board2.Source = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(img.GetHbitmap(), IntPtr.Zero, System.Windows.Int32Rect.Empty, BitmapSizeOptions.FromWidthAndHeight(img.Width, img.Height));
 
-                        //img.Save(myStream, System.Drawing.Imaging.ImageFormat.Bmp);
                     }
-                    if (myExt == 2)
+                    catch (Exception)
                     {
-                        string y = currentImage.LocalPath;
-                        bool x = System.IO.File.Exists(y);
-                        if (x)
-                            System.IO.File.Delete(y);
-                        img.Save(currentimage, System.Drawing.Imaging.ImageFormat.Jpeg);
+                        System.Windows.MessageBox.Show("There was a problem saving the file." +
+                            "Check the file permissions.");
                     }
-                    if (myExt == 3)
-                    {
-                        string y = currentImage.LocalPath;
-                        bool x = System.IO.File.Exists(y);
-                        if (x)
-                            System.IO.File.Delete(y);
-                        img.Save(currentimage, System.Drawing.Imaging.ImageFormat.Png);
-                    }
-                    if (myExt == 4)
-                    {
-                        string y = currentImage.LocalPath;
-                        bool x = System.IO.File.Exists(y);
-                        if (x)
-                            System.IO.File.Delete(y);
-                        img.Save(currentimage, System.Drawing.Imaging.ImageFormat.Gif);
-                    }
+
+                    //img.Save(myStream, System.Drawing.Imaging.ImageFormat.Bmp);
                 }
-            
-
+                if (myExt == 2)
+                {
+                    string y = currentImage.LocalPath;
+                    bool x = System.IO.File.Exists(y);
+                    if (x)
+                        System.IO.File.Delete(y);
+                    img.Save(currentimage, System.Drawing.Imaging.ImageFormat.Jpeg);
+                }
+                if (myExt == 3)
+                {
+                    string y = currentImage.LocalPath;
+                    bool x = System.IO.File.Exists(y);
+                    if (x)
+                        System.IO.File.Delete(y);
+                    img.Save(currentimage, System.Drawing.Imaging.ImageFormat.Png);
+                }
+                if (myExt == 4)
+                {
+                    string y = currentImage.LocalPath;
+                    bool x = System.IO.File.Exists(y);
+                    if (x)
+                        System.IO.File.Delete(y);
+                    img.Save(currentimage, System.Drawing.Imaging.ImageFormat.Gif);
+                }
+            }
         }
 
         private void SaveImageAs(object sender, RoutedEventArgs e)
@@ -314,14 +284,14 @@ namespace FunctionFilters
             dlg.FileName = "Image";
             dlg.DefaultExt = ".bmp";
             dlg.Title = "Save As";
-            dlg.Filter = "Bitmap Image (.bmp)|*.bmp|"+
+            dlg.Filter = "Bitmap Image (.bmp)|*.bmp|" +
                 "JPEG (*.jpg)|*.jpg|" +
                 "Portable Network Graphic (*.png)|*.png|" +
                 "Portable Network Graphic (*.gif)|*.gif";
             if (dlg.ShowDialog() == true)
             {
 
-                if (dlg.FilterIndex == 1) 
+                if (dlg.FilterIndex == 1)
                 {
                     string filename = dlg.FileName;
                     img.Save(filename, System.Drawing.Imaging.ImageFormat.Bmp);
@@ -454,7 +424,6 @@ namespace FunctionFilters
         
         public void Convolution(int[,] f, int d, int offset)
         {
-
             for (int i = 0; i < img.Width; i++)
             {
                 for (int j = 0; j < img.Height; j++)
@@ -586,26 +555,22 @@ namespace FunctionFilters
         {
             Convolution(MGaussianSmoothing, dGaussianSmoothing, 0);
             ComeBack();
-
         }
 
         private void fSharpen(object sender, RoutedEventArgs e)
         {
             Convolution(MSharpenFilter, 1, 0);
             ComeBack();
-
         }
 
         private void fedgeDetection(object sender, RoutedEventArgs e)
         {
-
             Convolution(MEdgeDetection, 1, 100);
             ComeBack();
         }
 
         private void fEmboss(object sender, RoutedEventArgs e)
         {
-
             Convolution(MEmboss, 1, 0);
             ComeBack();
         }
@@ -624,35 +589,30 @@ namespace FunctionFilters
         {
             FunctionFilter(MCustom);
             ComeBack();
-
         }
 
         private void IdentityFilterApply(object sender, RoutedEventArgs e)
         {
             InputFunction.Children.Clear();
             GraphPainting(MIdentityPoints, 2);
-
         }
 
         private void InversionFilterApply(object sender, RoutedEventArgs e)
         {
             InputFunction.Children.Clear();
             GraphPainting(MInversionPoints, 2);
-
         }
 
         private void BrightnessCorrectionApply(object sender, RoutedEventArgs e)
         {
             InputFunction.Children.Clear();
             GraphPainting(MBrightnessPoints, 3);
-
         }
 
         private void ContrastEnchancementApply(object sender, RoutedEventArgs e)
         {
             InputFunction.Children.Clear();
             GraphPainting(MContrastPoints, 4);
-
         }
 
         private void Gamma(object sender, RoutedEventArgs e)
@@ -671,7 +631,6 @@ namespace FunctionFilters
             }
             else
                 GammaCoeficient.Text = "Input Number from 0 to 5";
-
         }
         
         private void GammaApply(double g)
@@ -680,21 +639,16 @@ namespace FunctionFilters
             int i = 0;
             for (double h = 0; h < 256; h++)
             {
-
                 temp = (Math.Pow((h/255), g))*255;
                 MGamma[i] = (int)temp;
                 i++;
-            }
-
-            
+            }            
         }
 
         private void GSLightness(object sender, RoutedEventArgs e)
         {
-
             for (int i = 0; i < img.Width; i++)
             {
-
                 for (int j = 0; j < img.Height; j++)
                 {
                     int gray = (Matrix[i, j, 0] + Matrix[i, j, 1] + Matrix[i, j, 2]) / 3;
@@ -704,11 +658,9 @@ namespace FunctionFilters
                 }
             }
             ComeBack();
-
         }
         private void GSAverage(object sender, RoutedEventArgs e)
         {
-
             for (int i = 0; i < img.Width; i++)
             {
 
@@ -721,49 +673,42 @@ namespace FunctionFilters
                 }
             }
             ComeBack();
-
         }
 
         private void GSLuminosity(object sender, RoutedEventArgs e)
         {
-
             for (int i = 0; i < img.Width; i++)
             {
-
                 for (int j = 0; j < img.Height; j++)
                 {
-                    double gray = (0.21 * Matrix[i, j, 0]) + (0.71 * Matrix[i, j, 1]) + (0.07 * Matrix[i, j, 2]);
+                    double gray = (0.299 * Matrix[i, j, 0]) + (0.587 * Matrix[i, j, 1]) + (0.114 * Matrix[i, j, 2]);
                     Matrix[i, j, 0] = (int) gray;
-                    Matrix[i, j, 1] = (int)gray;
-                    Matrix[i, j, 2] = (int)gray;
+                    Matrix[i, j, 1] = (int) gray;
+                    Matrix[i, j, 2] = (int) gray;
                 }
             }
             ComeBack();
-
         }
 
         
 
-        private void fAverageDithering(object sender, RoutedEventArgs e)
+        private void fMyDithering(object sender, RoutedEventArgs e)
         {
-
             double o;
-            if (double.TryParse(GammaCoeficient.Text, out o))
+            if (double.TryParse(DitheringCoeficient.Text, out o))
             {
-                if (int.Parse(GammaCoeficient.Text) >= 2 && int.Parse(GammaCoeficient.Text) <= 16)
+                if (int.Parse(DitheringCoeficient.Text) >= 2 && int.Parse(DitheringCoeficient.Text) <= 16)
                 {
-                    fAverageDitheringInput(int.Parse(DitheringCoeficient.Text));
+                    fMyDitheringInput(int.Parse(DitheringCoeficient.Text));
                     ComeBack();
                 }
                 else
                     DitheringCoeficient.Text = "Input Number from 2 to 16";
             }
             else
-                DitheringCoeficient.Text = "Input Number from 2 to 16";
-
-            
+                DitheringCoeficient.Text = "Input Number from 2 to 16";            
         }
-        private void fAverageDitheringInput(int k)
+        private void fMyDitheringInput(int k)
         {
             
             double x = 256 / k;
@@ -775,7 +720,6 @@ namespace FunctionFilters
                 {
                     for (int l = 0; l < k; l++)
                     {
-                        //if (Matrix[i, j, 0] == Matrix[i, j, 1] && Matrix[i, j, 0] == Matrix[i, j, 2])
                         if (Matrix[i, j, 0] >= l * x && Matrix[i, j, 0] < (l+1)*x)
                         {
                             Matrix[i, j, 0] = (int)Math.Round(l * y);
@@ -788,12 +732,266 @@ namespace FunctionFilters
                         {
                             Matrix[i, j, 2] = (int)Math.Round(l * y);
                         }
-                         
                     }
-                   
                 }
             }
 
+        }
+
+        private void fThreshold(object sender, RoutedEventArgs e)
+        {
+            double o;
+            if (double.TryParse(ThresholdCoeficient.Text, out o))
+            {
+                if (int.Parse(ThresholdCoeficient.Text) >= 1 && int.Parse(ThresholdCoeficient.Text) <= 254)
+                {
+                    fThresholdInput(int.Parse(ThresholdCoeficient.Text));
+                    ComeBack();
+                }
+                else
+                    ThresholdCoeficient.Text = "Input Number from 1 to 254";
+            }
+            else
+                ThresholdCoeficient.Text = "Input Number from 1 to 254";
+        }
+        private void fThresholdInput(int k)
+        {
+                      
+
+            for (int i = 0; i < img.Width; i++)
+            {
+                for (int j = 0; j < img.Height; j++)
+                {
+
+                    if (Matrix[i, j, 0] > k)
+                    {
+                        Matrix[i, j, 0] = 255;
+                    }
+                    else
+                    {
+                        Matrix[i, j, 0] = 0;
+                    }
+                    if (Matrix[i, j, 1] > k)
+                    {
+                        Matrix[i, j, 1] = 255;
+                    }
+                    else
+                    {
+                        Matrix[i, j, 1] = 0;
+                    }
+                    if (Matrix[i, j, 2] > k)
+                    {
+                        Matrix[i, j, 2] = 255;
+                    }
+                    else
+                    {
+                        Matrix[i, j, 2] = 0;
+                    }
+                                        
+                }
+            }
+        }
+        public double GetRandomNumber(double minimum, double maximum)
+        {
+            Random random = new Random();
+            return random.NextDouble() * (maximum - minimum) + minimum;
+        }
+        private void fRandomDitheringInput(int k)
+        {
+            int y = 256 / (k - 1);
+            Random random = new Random();
+
+            for (int i = 0; i < img.Width; i++)
+            {
+                for (int j = 0; j < img.Height; j++)
+                {
+                    double h = random.NextDouble() * 1.0;
+
+                    if ((Matrix[i, j, 0] % y) <= (h * y))
+                    {
+                        Matrix[i, j, 0] = ((Matrix[i, j, 0] / y) * y);
+                    }
+                    else
+                    {
+                        Matrix[i, j, 0] = (((Matrix[i, j, 0] / y) + 1) * y);
+                    }
+                    if ((Matrix[i, j, 1] % y) <= (h * y))
+                    {
+                        Matrix[i, j, 1] = ((Matrix[i, j, 1] / y) * y);
+                    }
+                    else
+                    {
+                        Matrix[i, j, 1] = (((Matrix[i, j, 1] / y) + 1) * y);
+                    }
+                    if ((Matrix[i, j, 2] % y) <= (h * y))
+                    {
+                        Matrix[i, j, 2] = ((Matrix[i, j, 2] / y) * y);
+                    }
+                    else
+                    {
+                        Matrix[i, j, 2] = (((Matrix[i, j, 2] / y) + 1) * y);
+                    }
+                }
+            }
+        }
+
+        private void fRandomDithering(object sender, RoutedEventArgs e)
+        {
+            double o;
+            if (double.TryParse(DitheringCoeficient.Text, out o))
+            {
+                if (int.Parse(DitheringCoeficient.Text) >= 1 && int.Parse(DitheringCoeficient.Text) <= 254)
+                {
+                    fRandomDitheringInput(int.Parse(DitheringCoeficient.Text));
+                    ComeBack();
+                }
+                else
+                    DitheringCoeficient.Text = "Input Number from 1 to 254";
+            }
+            else
+                DitheringCoeficient.Text = "Input Number from 1 to 254";
+        }
+
+        private void kMeans(object sender, RoutedEventArgs e)
+        {
+            double o;
+            if (double.TryParse(DitheringCoeficient.Text, out o))
+            {
+                if (int.Parse(DitheringCoeficient.Text) >= 1 && int.Parse(DitheringCoeficient.Text) <= 128)
+                {
+                    fKMeansInput(int.Parse(KMeansCoeficient.Text));
+                    //ComeBack();
+                }
+                else
+                    DitheringCoeficient.Text = "Input Number from 1 to 128";
+            }
+            else
+                DitheringCoeficient.Text = "Input Number from 1 to 128";
+        }
+        private void fKMeansInput(int k)
+        {
+            Random random = new Random();
+            int difference = 10;
+            Vector3D[] centroid;
+            centroid = new Vector3D [k];
+            int[,] colorSpace;
+            List<Vector3D>[] groups = new List<Vector3D>[k];
+            colorSpace = new int[256, 3];
+            List<Vector3D> cSpace;
+            cSpace= new List<Vector3D>();
+            for (int i = 0; i < img.Width; i++)
+            {
+                for (int j = 0; j < img.Height; j++)
+                {
+                    Vector3D asd = new Vector3D(Matrix[i, j, 0], Matrix[i, j, 1], Matrix[i, j, 2]);
+                    //if (!cSpace.Contains(asd))
+                    //{
+                        cSpace.Add(asd);
+                    //}
+                   
+                }
+            }
+            if (cSpace.Count > k)
+            {
+                for (int s = 0; s < k; s++)
+                {
+                    centroid[s] = new Vector3D(random.Next(255), random.Next(255), random.Next(255));
+                    groups[s] = new List<Vector3D>();
+                }
+
+                while (difference > 0)
+                {
+                    difference = 0;
+                    foreach(Vector3D vi in cSpace)
+                    
+                    //cSpace.ForEach(delegate(Vector3D vi)
+                    {
+                        double minDist = Math.Sqrt(Math.Pow(((int)vi.X - (int)centroid[0].X), 2) + Math.Pow(((int)vi.Y - (int)centroid[0].Y), 2) + Math.Pow(((int)vi.Z - (int)centroid[0].Z), 2));
+                        int Centroid = 0;
+                        for (int f = 1; f<k; f++)
+                        {
+                            double h = Math.Sqrt(Math.Pow(((int)vi.X - (int)centroid[f].X), 2) + Math.Pow(((int)vi.Y - (int)centroid[f].Y), 2) + Math.Pow(((int)vi.Z - (int)centroid[f].Z), 2));
+                            if (minDist > h)
+                            {
+                                minDist = h;
+                                Centroid = f;
+                            }
+                        }
+                        if (!groups[Centroid].Contains(vi))
+                        {
+                            for(int sdf = 0; sdf < k;sdf++)
+                            {
+                                if (groups[sdf].Contains(vi) && sdf!=Centroid)
+                                {
+                                    groups[sdf].Remove(vi);
+                                }
+                            }
+                            difference++;
+                            groups[Centroid].Add(vi);
+                        }
+
+
+                    }
+                    if (difference>0)
+                    {
+                        for (int f = 0; f < k; f++)
+                        {
+                            centroid[f] = FunctionFilters.centroid.Centroid(groups[f]);
+                            
+                        }
+                    }
+
+                }
+
+                for (int i = 0; i < img.Width; i++)
+                {
+                    for (int j = 0; j < img.Height; j++)
+                    {
+                        Vector3D asd = new Vector3D(Matrix[i, j, 0], Matrix[i, j, 1], Matrix[i, j, 2]);
+                        for (int r = 0; r < k; r++)
+                        {
+                            if (groups[r].Contains(asd))
+                            {
+                                //Matrix[i, j, 0] = (int)Math.Round(centroid[r].X);
+                                //Matrix[i, j, 1] = (int)Math.Round(centroid[r].Y);
+                                //Matrix[i, j, 2] = (int)Math.Round(centroid[r].Z);
+                                System.Drawing.Color c = System.Drawing.Color.FromArgb((int)Math.Round(centroid[r].X), (int)Math.Round(centroid[r].Y), (int)Math.Round(centroid[r].Z));
+                                img.SetPixel(i, j, c);
+                            }
+                        }
+                        //if (Matrix[i, j, 3] < 0)
+                        //    Matrix[i, j, 3] = 0;
+                        //if (Matrix[i, j, 2] < 0)
+                        //    Matrix[i, j, 2] = 0;
+                        //if (Matrix[i, j, 1] < 0)
+                        //    Matrix[i, j, 1] = 0;
+                        //if (Matrix[i, j, 0] < 0)
+                        //    Matrix[i, j, 0] = 0;
+                        //if (Matrix[i, j, 3] > 255)
+                        //    Matrix[i, j, 3] = 255;
+                        //if (Matrix[i, j, 2] > 255)
+                        //    Matrix[i, j, 2] = 255;
+                        //if (Matrix[i, j, 1] > 255)
+                        //    Matrix[i, j, 1] = 255;
+                        //if (Matrix[i, j, 0] > 255)
+                        //    Matrix[i, j, 0] = 255;
+
+                    }
+                }
+                this.board.Source = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(img.GetHbitmap(), IntPtr.Zero, System.Windows.Int32Rect.Empty, BitmapSizeOptions.FromWidthAndHeight(img.Width, img.Height));
+
+            }
+        }
+
+    }
+    public static class centroid
+    {
+        public static Vector3D Centroid(this List<Vector3D> path)
+        {
+            Vector3D result = path.Aggregate(new Vector3D(0, 0, 0), (current, point) => current + point);
+            result /= path.Count;
+
+            return result;
         }
 
     }
