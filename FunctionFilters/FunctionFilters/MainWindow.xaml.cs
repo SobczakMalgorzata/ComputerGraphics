@@ -874,9 +874,9 @@ namespace FunctionFilters
             int difference = 10;
             Vector3D[] centroid;
             centroid = new Vector3D [k];
-            int[,] colorSpace;
+            int[,,,] colorSpace;
             List<Vector3D>[] groups = new List<Vector3D>[k];
-            colorSpace = new int[256, 3];
+            colorSpace = new int[256, 256, 256, 2];
             List<Vector3D> cSpace;
             cSpace= new List<Vector3D>();
             for (int i = 0; i < img.Width; i++)
@@ -884,10 +884,12 @@ namespace FunctionFilters
                 for (int j = 0; j < img.Height; j++)
                 {
                     Vector3D asd = new Vector3D(Matrix[i, j, 0], Matrix[i, j, 1], Matrix[i, j, 2]);
-                    //if (!cSpace.Contains(asd))
-                    //{
+                    if (colorSpace[Matrix[i, j, 0], Matrix[i, j, 1], Matrix[i, j, 2], 0] == 0)
+                    {
                         cSpace.Add(asd);
-                    //}
+                    }
+                    colorSpace[Matrix[i, j, 0], Matrix[i, j, 1], Matrix[i, j, 2], 0]++;
+                    colorSpace[Matrix[i, j, 0], Matrix[i, j, 1], Matrix[i, j, 2], 1] = k;
                    
                 }
             }
@@ -903,8 +905,6 @@ namespace FunctionFilters
                 {
                     difference = 0;
                     foreach(Vector3D vi in cSpace)
-                    
-                    //cSpace.ForEach(delegate(Vector3D vi)
                     {
                         double minDist = Math.Sqrt(Math.Pow(((int)vi.X - (int)centroid[0].X), 2) + Math.Pow(((int)vi.Y - (int)centroid[0].Y), 2) + Math.Pow(((int)vi.Z - (int)centroid[0].Z), 2));
                         int Centroid = 0;
@@ -917,27 +917,25 @@ namespace FunctionFilters
                                 Centroid = f;
                             }
                         }
-                        if (!groups[Centroid].Contains(vi))
+                        if(colorSpace[(int)vi.X, (int)vi.Y, (int)vi.Z, 1] != Centroid)
                         {
-                            for(int sdf = 0; sdf < k;sdf++)
-                            {
-                                if (groups[sdf].Contains(vi) && sdf!=Centroid)
-                                {
-                                    groups[sdf].Remove(vi);
-                                }
-                            }
+                            colorSpace[(int)vi.X, (int)vi.Y, (int)vi.Z, 1] = Centroid;
                             difference++;
-                            groups[Centroid].Add(vi);
+                        }                        
+                    }
+                    foreach (Vector3D vi in cSpace)
+                    { 
+                        for(int p1=0; p1<colorSpace[(int)vi.X, (int)vi.Y, (int)vi.Z, 0]; p1++)
+                        {
+                            groups[colorSpace[(int)vi.X, (int)vi.Y, (int)vi.Z, 1]].Add(vi);
                         }
-
-
                     }
                     if (difference>0)
                     {
                         for (int f = 0; f < k; f++)
                         {
                             centroid[f] = FunctionFilters.centroid.Centroid(groups[f]);
-                            
+                            groups[f].Clear();
                         }
                     }
 
@@ -947,39 +945,11 @@ namespace FunctionFilters
                 {
                     for (int j = 0; j < img.Height; j++)
                     {
-                        Vector3D asd = new Vector3D(Matrix[i, j, 0], Matrix[i, j, 1], Matrix[i, j, 2]);
-                        for (int r = 0; r < k; r++)
-                        {
-                            if (groups[r].Contains(asd))
-                            {
-                                //Matrix[i, j, 0] = (int)Math.Round(centroid[r].X);
-                                //Matrix[i, j, 1] = (int)Math.Round(centroid[r].Y);
-                                //Matrix[i, j, 2] = (int)Math.Round(centroid[r].Z);
-                                System.Drawing.Color c = System.Drawing.Color.FromArgb((int)Math.Round(centroid[r].X), (int)Math.Round(centroid[r].Y), (int)Math.Round(centroid[r].Z));
-                                img.SetPixel(i, j, c);
-                            }
-                        }
-                        //if (Matrix[i, j, 3] < 0)
-                        //    Matrix[i, j, 3] = 0;
-                        //if (Matrix[i, j, 2] < 0)
-                        //    Matrix[i, j, 2] = 0;
-                        //if (Matrix[i, j, 1] < 0)
-                        //    Matrix[i, j, 1] = 0;
-                        //if (Matrix[i, j, 0] < 0)
-                        //    Matrix[i, j, 0] = 0;
-                        //if (Matrix[i, j, 3] > 255)
-                        //    Matrix[i, j, 3] = 255;
-                        //if (Matrix[i, j, 2] > 255)
-                        //    Matrix[i, j, 2] = 255;
-                        //if (Matrix[i, j, 1] > 255)
-                        //    Matrix[i, j, 1] = 255;
-                        //if (Matrix[i, j, 0] > 255)
-                        //    Matrix[i, j, 0] = 255;
-
+                        System.Drawing.Color c = System.Drawing.Color.FromArgb((int)Math.Round(centroid[colorSpace[Matrix[i, j, 0], Matrix[i, j, 1], Matrix[i, j, 2], 1]].X), (int)Math.Round(centroid[colorSpace[Matrix[i, j, 0], Matrix[i, j, 1], Matrix[i, j, 2], 1]].Y), (int)Math.Round(centroid[colorSpace[Matrix[i, j, 0], Matrix[i, j, 1], Matrix[i, j, 2], 1]].Z));
+                        img.SetPixel(i, j, c);
                     }
                 }
                 this.board.Source = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(img.GetHbitmap(), IntPtr.Zero, System.Windows.Int32Rect.Empty, BitmapSizeOptions.FromWidthAndHeight(img.Width, img.Height));
-
             }
         }
 
