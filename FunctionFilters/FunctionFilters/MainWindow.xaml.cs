@@ -26,12 +26,24 @@ namespace FunctionFilters
     {
         
         public Bitmap img;
-        int[, ,] Matrix;
+        int[, ,] myMatrix;
         int[, ,] MatrixZero;
         string currentimage;
         Uri currentImage;
         int myExt;
+        int NHeight, NWidth;
+        //line and circle drawing
+        //mouse click switch
+        int switchDrawing = 0;
+        System.Drawing.Color colorSwitching = System.Drawing.Color.Black;
+        //points detection
+        double point1X, point1Y;
+        double point2X, point2Y;
 
+        /// <summary>
+        /// matrices for filters function
+        /// 
+        /// </summary>
         int[] MIdentity = new int[256];
         int[] MInversion = new int[256];
         int[] MGamma = new int[256];
@@ -52,11 +64,37 @@ namespace FunctionFilters
         int[,] MEdgeDetection = new int[3, 3];
         int[,] MEmboss = new int[3, 3];
         int[,] MCustomFunction = new int[256, 256];
+        String circle = "circle.ico";
+        String line = "line.ico";
+        int lineWidth = 1;
         //MouseButtonEventArgs e1;
 
         public MainWindow()
         {
             InitializeComponent();
+            System.Windows.Controls.Image bi3 = new System.Windows.Controls.Image();
+            bi3.BeginInit();
+            bi3.Source = new BitmapImage(new Uri(circle, UriKind.Relative));
+            bi3.EndInit();
+            StackPanel stackPnl = new StackPanel();
+            stackPnl.Orientation = System.Windows.Controls.Orientation.Horizontal;
+            stackPnl.Margin = new Thickness(0);
+            stackPnl.Children.Add(bi3);
+
+            buttonCircle.Content = stackPnl;
+
+            System.Windows.Controls.Image bi4 = new System.Windows.Controls.Image();
+            bi4.BeginInit();
+            bi4.Source = new BitmapImage(new Uri(line, UriKind.Relative));
+            bi4.EndInit();
+            StackPanel stackPnl1 = new StackPanel();
+            stackPnl1.Orientation = System.Windows.Controls.Orientation.Horizontal;
+            stackPnl1.Margin = new Thickness(0);
+            stackPnl1.Children.Add(bi4);
+            buttonLine.Content = stackPnl1;
+            //mapOfPoland.Source = bi4;
+            NHeight = 600;
+            NWidth = 600;
             int a = 50;
             int b = 50;
             for (int i = 0; i < 256; i++)
@@ -174,7 +212,7 @@ namespace FunctionFilters
         
         public void getRGB()
         {
-            Matrix = new int[img.Width, img.Height, 4];
+            myMatrix = new int[img.Width, img.Height, 4];
             MatrixZero = new int[img.Width, img.Height, 4];
             for (int i = 0; i < img.Width; i++)
             {
@@ -185,13 +223,13 @@ namespace FunctionFilters
 
                     if (pixel != null)
                     {
-                        Matrix[i, j, 0] = pixel.R;
+                        myMatrix[i, j, 0] = pixel.R;
                         MatrixZero[i, j, 0] = pixel.R;
-                        Matrix[i, j, 1] = pixel.G;
+                        myMatrix[i, j, 1] = pixel.G;
                         MatrixZero[i, j, 1] = pixel.G;
-                        Matrix[i, j, 2] = pixel.B;
+                        myMatrix[i, j, 2] = pixel.B;
                         MatrixZero[i, j, 2] = pixel.B;
-                        Matrix[i, j, 3] = pixel.A;
+                        myMatrix[i, j, 3] = pixel.A;
                         MatrixZero[i, j, 3] = pixel.A;
                     }
                 }
@@ -204,23 +242,23 @@ namespace FunctionFilters
             {
                 for (int j = 0; j < img.Height; j++)
                 {
-                    if (Matrix[i, j, 3] < 0)
-                        Matrix[i, j, 3] = 0;
-                    if (Matrix[i, j, 2] < 0)
-                        Matrix[i, j, 2] = 0;
-                    if (Matrix[i, j, 1] < 0)
-                        Matrix[i, j, 1] = 0;
-                    if (Matrix[i, j, 0] < 0)
-                        Matrix[i, j, 0] = 0;
-                    if (Matrix[i, j, 3] > 255)
-                        Matrix[i, j, 3] = 255;
-                    if (Matrix[i, j, 2] > 255)
-                        Matrix[i, j, 2] = 255;
-                    if (Matrix[i, j, 1] > 255)
-                        Matrix[i, j, 1] = 255;
-                    if (Matrix[i, j, 0] > 255)
-                        Matrix[i, j, 0] = 255;
-                    System.Drawing.Color c = System.Drawing.Color.FromArgb(Matrix[i, j, 3], Matrix[i, j, 0], Matrix[i, j, 1], Matrix[i, j, 2]);
+                    if (myMatrix[i, j, 3] < 0)
+                        myMatrix[i, j, 3] = 0;
+                    if (myMatrix[i, j, 2] < 0)
+                        myMatrix[i, j, 2] = 0;
+                    if (myMatrix[i, j, 1] < 0)
+                        myMatrix[i, j, 1] = 0;
+                    if (myMatrix[i, j, 0] < 0)
+                        myMatrix[i, j, 0] = 0;
+                    if (myMatrix[i, j, 3] > 255)
+                        myMatrix[i, j, 3] = 255;
+                    if (myMatrix[i, j, 2] > 255)
+                        myMatrix[i, j, 2] = 255;
+                    if (myMatrix[i, j, 1] > 255)
+                        myMatrix[i, j, 1] = 255;
+                    if (myMatrix[i, j, 0] > 255)
+                        myMatrix[i, j, 0] = 255;
+                    System.Drawing.Color c = System.Drawing.Color.FromArgb(myMatrix[i, j, 3], myMatrix[i, j, 0], myMatrix[i, j, 1], myMatrix[i, j, 2]);
                     img.SetPixel(i, j, c);
                 }
             }
@@ -393,13 +431,13 @@ namespace FunctionFilters
                 for (int j = 0; j < img.Height; j++)
                 {
                     if (chanelR.IsChecked == true)
-                        Matrix[i, j, 0] = f[Matrix[i, j, 0]];
+                        myMatrix[i, j, 0] = f[myMatrix[i, j, 0]];
                     if (chanelG.IsChecked == true)
-                        Matrix[i, j, 1] = f[Matrix[i, j, 1]];
+                        myMatrix[i, j, 1] = f[myMatrix[i, j, 1]];
                     if (chanelB.IsChecked == true)
-                        Matrix[i, j, 2] = f[Matrix[i, j, 2]];
+                        myMatrix[i, j, 2] = f[myMatrix[i, j, 2]];
                     if (chanelA.IsChecked == true)
-                        Matrix[i, j, 3] = f[Matrix[i, j, 3]];
+                        myMatrix[i, j, 3] = f[myMatrix[i, j, 3]];
                 }
             }
         }
@@ -538,10 +576,10 @@ namespace FunctionFilters
                             }
                         }
                     }
-                    Matrix[i, j, 0] = ((a1 / d) + offset);
-                    Matrix[i, j, 1] = ((a2 / d) + offset);
-                    Matrix[i, j, 2] = ((a3 / d) + offset);
-                    Matrix[i, j, 3] = ((a0 / d) + offset);
+                    myMatrix[i, j, 0] = ((a1 / d) + offset);
+                    myMatrix[i, j, 1] = ((a2 / d) + offset);
+                    myMatrix[i, j, 2] = ((a3 / d) + offset);
+                    myMatrix[i, j, 3] = ((a0 / d) + offset);
                 }
             }
         }
@@ -651,10 +689,10 @@ namespace FunctionFilters
             {
                 for (int j = 0; j < img.Height; j++)
                 {
-                    int gray = (Matrix[i, j, 0] + Matrix[i, j, 1] + Matrix[i, j, 2]) / 3;
-                    Matrix[i, j, 0] = gray;
-                    Matrix[i, j, 1] = gray;
-                    Matrix[i, j, 2] = gray;
+                    int gray = (myMatrix[i, j, 0] + myMatrix[i, j, 1] + myMatrix[i, j, 2]) / 3;
+                    myMatrix[i, j, 0] = gray;
+                    myMatrix[i, j, 1] = gray;
+                    myMatrix[i, j, 2] = gray;
                 }
             }
             ComeBack();
@@ -666,10 +704,10 @@ namespace FunctionFilters
 
                 for (int j = 0; j < img.Height; j++)
                 {
-                    int gray = (Math.Max(Matrix[i, j, 0], Math.Max(Matrix[i, j, 1], Matrix[i, j, 2])) + Math.Min(Matrix[i, j, 0], Math.Min(Matrix[i, j, 1], Matrix[i, j, 2]))) / 2;
-                    Matrix[i, j, 0] = gray;
-                    Matrix[i, j, 1] = gray;
-                    Matrix[i, j, 2] = gray;
+                    int gray = (Math.Max(myMatrix[i, j, 0], Math.Max(myMatrix[i, j, 1], myMatrix[i, j, 2])) + Math.Min(myMatrix[i, j, 0], Math.Min(myMatrix[i, j, 1], myMatrix[i, j, 2]))) / 2;
+                    myMatrix[i, j, 0] = gray;
+                    myMatrix[i, j, 1] = gray;
+                    myMatrix[i, j, 2] = gray;
                 }
             }
             ComeBack();
@@ -681,10 +719,10 @@ namespace FunctionFilters
             {
                 for (int j = 0; j < img.Height; j++)
                 {
-                    double gray = (0.299 * Matrix[i, j, 0]) + (0.587 * Matrix[i, j, 1]) + (0.114 * Matrix[i, j, 2]);
-                    Matrix[i, j, 0] = (int) gray;
-                    Matrix[i, j, 1] = (int) gray;
-                    Matrix[i, j, 2] = (int) gray;
+                    double gray = (0.299 * myMatrix[i, j, 0]) + (0.587 * myMatrix[i, j, 1]) + (0.114 * myMatrix[i, j, 2]);
+                    myMatrix[i, j, 0] = (int) gray;
+                    myMatrix[i, j, 1] = (int) gray;
+                    myMatrix[i, j, 2] = (int) gray;
                 }
             }
             ComeBack();
@@ -720,17 +758,17 @@ namespace FunctionFilters
                 {
                     for (int l = 0; l < k; l++)
                     {
-                        if (Matrix[i, j, 0] >= l * x && Matrix[i, j, 0] < (l+1)*x)
+                        if (myMatrix[i, j, 0] >= l * x && myMatrix[i, j, 0] < (l+1)*x)
                         {
-                            Matrix[i, j, 0] = (int)Math.Round(l * y);
+                            myMatrix[i, j, 0] = (int)Math.Round(l * y);
                         }
-                        if (Matrix[i, j, 1] >= l * x && Matrix[i, j, 1] < (l + 1) * x)
+                        if (myMatrix[i, j, 1] >= l * x && myMatrix[i, j, 1] < (l + 1) * x)
                         {
-                            Matrix[i, j, 1] = (int)Math.Round(l * y);
+                            myMatrix[i, j, 1] = (int)Math.Round(l * y);
                         }
-                        if (Matrix[i, j, 2] >= l * x && Matrix[i, j, 2] < (l + 1) * x)
+                        if (myMatrix[i, j, 2] >= l * x && myMatrix[i, j, 2] < (l + 1) * x)
                         {
-                            Matrix[i, j, 2] = (int)Math.Round(l * y);
+                            myMatrix[i, j, 2] = (int)Math.Round(l * y);
                         }
                     }
                 }
@@ -763,29 +801,29 @@ namespace FunctionFilters
                 for (int j = 0; j < img.Height; j++)
                 {
 
-                    if (Matrix[i, j, 0] > k)
+                    if (myMatrix[i, j, 0] > k)
                     {
-                        Matrix[i, j, 0] = 255;
+                        myMatrix[i, j, 0] = 255;
                     }
                     else
                     {
-                        Matrix[i, j, 0] = 0;
+                        myMatrix[i, j, 0] = 0;
                     }
-                    if (Matrix[i, j, 1] > k)
+                    if (myMatrix[i, j, 1] > k)
                     {
-                        Matrix[i, j, 1] = 255;
-                    }
-                    else
-                    {
-                        Matrix[i, j, 1] = 0;
-                    }
-                    if (Matrix[i, j, 2] > k)
-                    {
-                        Matrix[i, j, 2] = 255;
+                        myMatrix[i, j, 1] = 255;
                     }
                     else
                     {
-                        Matrix[i, j, 2] = 0;
+                        myMatrix[i, j, 1] = 0;
+                    }
+                    if (myMatrix[i, j, 2] > k)
+                    {
+                        myMatrix[i, j, 2] = 255;
+                    }
+                    else
+                    {
+                        myMatrix[i, j, 2] = 0;
                     }
                                         
                 }
@@ -807,29 +845,29 @@ namespace FunctionFilters
                 {
                     double h = random.NextDouble() * 1.0;
 
-                    if ((Matrix[i, j, 0] % y) <= (h * y))
+                    if ((myMatrix[i, j, 0] % y) <= (h * y))
                     {
-                        Matrix[i, j, 0] = ((Matrix[i, j, 0] / y) * y);
+                        myMatrix[i, j, 0] = ((myMatrix[i, j, 0] / y) * y);
                     }
                     else
                     {
-                        Matrix[i, j, 0] = (((Matrix[i, j, 0] / y) + 1) * y);
+                        myMatrix[i, j, 0] = (((myMatrix[i, j, 0] / y) + 1) * y);
                     }
-                    if ((Matrix[i, j, 1] % y) <= (h * y))
+                    if ((myMatrix[i, j, 1] % y) <= (h * y))
                     {
-                        Matrix[i, j, 1] = ((Matrix[i, j, 1] / y) * y);
-                    }
-                    else
-                    {
-                        Matrix[i, j, 1] = (((Matrix[i, j, 1] / y) + 1) * y);
-                    }
-                    if ((Matrix[i, j, 2] % y) <= (h * y))
-                    {
-                        Matrix[i, j, 2] = ((Matrix[i, j, 2] / y) * y);
+                        myMatrix[i, j, 1] = ((myMatrix[i, j, 1] / y) * y);
                     }
                     else
                     {
-                        Matrix[i, j, 2] = (((Matrix[i, j, 2] / y) + 1) * y);
+                        myMatrix[i, j, 1] = (((myMatrix[i, j, 1] / y) + 1) * y);
+                    }
+                    if ((myMatrix[i, j, 2] % y) <= (h * y))
+                    {
+                        myMatrix[i, j, 2] = ((myMatrix[i, j, 2] / y) * y);
+                    }
+                    else
+                    {
+                        myMatrix[i, j, 2] = (((myMatrix[i, j, 2] / y) + 1) * y);
                     }
                 }
             }
@@ -883,13 +921,13 @@ namespace FunctionFilters
             {
                 for (int j = 0; j < img.Height; j++)
                 {
-                    Vector3D asd = new Vector3D(Matrix[i, j, 0], Matrix[i, j, 1], Matrix[i, j, 2]);
-                    if (colorSpace[Matrix[i, j, 0], Matrix[i, j, 1], Matrix[i, j, 2], 0] == 0)
+                    Vector3D asd = new Vector3D(myMatrix[i, j, 0], myMatrix[i, j, 1], myMatrix[i, j, 2]);
+                    if (colorSpace[myMatrix[i, j, 0], myMatrix[i, j, 1], myMatrix[i, j, 2], 0] == 0)
                     {
                         cSpace.Add(asd);
                     }
-                    colorSpace[Matrix[i, j, 0], Matrix[i, j, 1], Matrix[i, j, 2], 0]++;
-                    colorSpace[Matrix[i, j, 0], Matrix[i, j, 1], Matrix[i, j, 2], 1] = k;
+                    colorSpace[myMatrix[i, j, 0], myMatrix[i, j, 1], myMatrix[i, j, 2], 0]++;
+                    colorSpace[myMatrix[i, j, 0], myMatrix[i, j, 1], myMatrix[i, j, 2], 1] = k;
                    
                 }
             }
@@ -945,12 +983,301 @@ namespace FunctionFilters
                 {
                     for (int j = 0; j < img.Height; j++)
                     {
-                        System.Drawing.Color c = System.Drawing.Color.FromArgb((int)Math.Round(centroid[colorSpace[Matrix[i, j, 0], Matrix[i, j, 1], Matrix[i, j, 2], 1]].X), (int)Math.Round(centroid[colorSpace[Matrix[i, j, 0], Matrix[i, j, 1], Matrix[i, j, 2], 1]].Y), (int)Math.Round(centroid[colorSpace[Matrix[i, j, 0], Matrix[i, j, 1], Matrix[i, j, 2], 1]].Z));
+                        System.Drawing.Color c = System.Drawing.Color.FromArgb((int)Math.Round(centroid[colorSpace[myMatrix[i, j, 0], myMatrix[i, j, 1], myMatrix[i, j, 2], 1]].X), (int)Math.Round(centroid[colorSpace[myMatrix[i, j, 0], myMatrix[i, j, 1], myMatrix[i, j, 2], 1]].Y), (int)Math.Round(centroid[colorSpace[myMatrix[i, j, 0], myMatrix[i, j, 1], myMatrix[i, j, 2], 1]].Z));
                         img.SetPixel(i, j, c);
                     }
                 }
                 this.board.Source = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(img.GetHbitmap(), IntPtr.Zero, System.Windows.Int32Rect.Empty, BitmapSizeOptions.FromWidthAndHeight(img.Width, img.Height));
             }
+        }
+
+        private void fNewEmpty(object sender, RoutedEventArgs e)
+        {
+            img = new Bitmap(NWidth, NHeight);
+
+            myMatrix = new int[NWidth, NHeight, 4];
+            MatrixZero = new int[NWidth, NHeight, 4];
+            for (int i = 0; i < NWidth; i++)
+            {
+                for (int j = 0; j < NHeight; j++)
+                {
+                    myMatrix[i, j, 0] = 255;
+                    MatrixZero[i, j, 0] = 255;
+                    myMatrix[i, j, 1] = 255;
+                    MatrixZero[i, j, 1] = 255;
+                    myMatrix[i, j, 2] = 255;
+                    MatrixZero[i, j, 2] = 255;
+                    myMatrix[i, j, 3] = 255;
+                    MatrixZero[i, j, 3] = 255;
+                    System.Drawing.Color c = System.Drawing.Color.FromArgb(myMatrix[i, j, 3], myMatrix[i, j, 0], myMatrix[i, j, 1], myMatrix[i, j, 2]);
+                    img.SetPixel(i, j, c);
+                }
+            }
+            this.board.Source = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(img.GetHbitmap(), IntPtr.Zero, System.Windows.Int32Rect.Empty, BitmapSizeOptions.FromWidthAndHeight(img.Width, img.Height));
+            this.board2.Source = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(img.GetHbitmap(), IntPtr.Zero, System.Windows.Int32Rect.Empty, BitmapSizeOptions.FromWidthAndHeight(img.Width, img.Height));
+        }
+        
+        private void MidpointCircle(object sender, RoutedEventArgs e)
+        {
+            switchDrawing = 3;
+        }
+
+        private void BresenhamAlgorithm(object sender, RoutedEventArgs e)
+        {
+            switchDrawing = 1;
+        }
+
+        private void pointInput(object sender, MouseButtonEventArgs e)
+        {
+            if (switchDrawing == 2)
+            {
+                System.Windows.Point point = e.GetPosition(board);
+                point2X = (point.X * img.Width) / board.ActualWidth;
+                point2Y = (point.Y * img.Height) / board.ActualHeight;
+                switchDrawing = 0;
+                fBresenhamAlgorithm();
+            }
+            if (switchDrawing == 1)
+            {
+                System.Windows.Point point = e.GetPosition(board);
+                point1X = (point.X * img.Width) / board.ActualWidth;
+                point1Y = (point.Y * img.Height) / board.ActualHeight;
+                switchDrawing = 2;
+            }
+            if (switchDrawing == 4)
+            {
+                System.Windows.Point point = e.GetPosition(board);
+                point2X = (point.X * img.Width) / board.ActualWidth;
+                point2Y = (point.Y * img.Height) / board.ActualHeight;
+                switchDrawing = 0;
+                int r = (int)Math.Round(Math.Sqrt(Math.Pow((double)((int)point2X - (int)point1X), 2) + Math.Pow((double)((int)point2Y - (int)point1Y), 2)));
+                fMidpointCircle(r);
+            }
+            if (switchDrawing == 3)
+            {
+                System.Windows.Point point = e.GetPosition(board);
+                point1X = (point.X * img.Width) / board.ActualWidth;
+                point1Y = (point.Y * img.Height) / board.ActualHeight;
+                switchDrawing = 4;
+            }
+        }
+        private void circleD(int x, int y, int cx, int cy, System.Drawing.Color color)
+        {
+            brush(cx + x, cy + y, lineWidth, color);
+            brush(cx - x, cy - y, lineWidth, color);
+            brush(cx + x, cy - y, lineWidth, color);
+            brush(cx - x, cy + y, lineWidth, color);
+            brush(cx + y, cy + x, lineWidth, color);
+            brush(cx - y, cy + x, lineWidth, color);
+            brush(cx + y, cy - x, lineWidth, color);
+            brush(cx - y, cy - x, lineWidth, color);
+            
+        }
+        private void fMidpointCircle(int r)
+        {
+            int dE = 3;
+            int dSE = 5 - 2 * r;
+            int d = 1 - r;
+            int x = 0;
+            int y = r;
+            circleD(x, y, (int)point1X, (int)point1Y, colorSwitching);
+            while (y > x)
+            {
+                if (d < 0) //move to E
+                {
+                    d += dE;
+                    dE += 2;
+                    dSE += 2;
+                }
+                else //move to SE
+                {
+                    d += dSE;
+                    dE += 2;
+                    dSE += 4;
+                    --y;
+                }
+                ++x;
+                circleD(x, y, (int)point1X, (int)point1Y, colorSwitching);
+            }
+            ComeBack();
+            
+        }
+        public void setPixel(int x, int y, System.Drawing.Color c)
+        {
+            if (x >= 0 && y >= 0 && x < img.Width && y < img.Height)
+            {
+                myMatrix[x, y, 0] = c.R;
+                myMatrix[x, y, 1] = c.G;
+                myMatrix[x, y, 2] = c.B;
+            }
+        }
+        public void brush(int x, int y, int t, System.Drawing.Color c)
+        {
+            if (t==1)
+            {
+                setPixel(x, y, c);
+            }
+            if (t==3)
+            {
+                setPixel(x, y, c);
+                setPixel(x+1, y, c);
+                setPixel(x, y+1, c);
+                setPixel(x-1, y, c);
+                setPixel(x, y-1, c);
+            }
+            if (t==5)
+            {
+                setPixel(x, y, c);
+                setPixel(x + 1, y, c);
+                setPixel(x, y + 1, c);
+                setPixel(x - 1, y, c);
+                setPixel(x, y - 1, c);
+                setPixel(x + 2, y, c);
+                setPixel(x, y + 2, c);
+                setPixel(x - 2, y, c);
+                setPixel(x, y - 2, c);
+                setPixel(x + 1, y + 1, c);
+                setPixel(x - 1, y + 1, c);
+                setPixel(x - 1, y - 1, c);
+                setPixel(x + 1, y - 1, c);
+                setPixel(x + 1, y + 2, c);
+                setPixel(x - 1, y + 2, c);
+                setPixel(x - 1, y - 2, c);
+                setPixel(x + 1, y - 2, c);
+                setPixel(x + 2, y + 1, c);
+                setPixel(x - 2, y + 1, c);
+                setPixel(x - 2, y - 1, c);
+                setPixel(x + 2, y - 1, c);
+
+            }
+        }
+
+        private void fBresenhamAlgorithm()
+        {
+            bool down = true;
+            int x0, y0, x1, y1;
+            x0 = (int)point1X;
+            y0 = (int)point1Y;
+            x1 = (int)point2X;
+            y1 = (int)point2Y;
+            brush(x0, y0, lineWidth, colorSwitching);
+            myMatrix[x0, y0, 1] = 0;
+            myMatrix[x0, y0, 2] = 0;
+            if (x0 > x1)
+            {
+                int z = x0;
+                x0 = x1;
+                x1 = z;
+                z = y0;
+                y0 = y1;
+                y1 = z;
+            }
+            if (y0 > y1)
+            {
+                y1 = y0 + (y0 - y1);
+                down = false;
+            }
+            
+            bool steep = (Math.Abs(y1 - y0) > Math.Abs(x1 - x0));
+            int dx = x1 - x0;
+            int dy = y1 - y0;
+            if (steep)
+            {
+                int z = x0;
+                x0 = y0;
+                y0 = z;
+                z = y1;
+                y1 = x1;
+                x1 = z;
+                z = dx;
+                dx = dy;
+                dy = z;
+            }
+            int d = 2*dy -dx;
+            int dE = 2 * dy;
+            int dNE = 2*(dy - dx);
+            
+            int y = y0;
+            int x = x0;
+
+            
+            while (x < x1)
+            {
+                if (d <= 0)
+                {
+                    d += dE;
+                    x++;
+                }
+                else
+                {
+                    ++x;
+                    d += dNE;
+                    ++y;
+                    
+                }
+                if (down)
+                {
+                    if (!steep)
+                    {
+                        brush(x, y, lineWidth, colorSwitching);
+                    }
+                    else
+                    {
+                        brush(y, x, lineWidth, colorSwitching);
+
+                    }
+                }
+                else
+                {
+
+                    if (!steep)
+                    {
+                        brush(x, y0 - (y - y0), lineWidth, colorSwitching);
+                    }
+                    else
+                    {
+                        brush(y, x0 - (x - x0), lineWidth, colorSwitching);
+                    }
+                }
+            }    
+                    
+            ComeBack();
+            
+        }
+
+        private void Thickness1(object sender, RoutedEventArgs e)
+        {
+            lineWidth = 1;
+        }
+
+        private void Thickness3(object sender, RoutedEventArgs e)
+        {
+            lineWidth = 3;
+        }
+
+        private void Thickness5(object sender, RoutedEventArgs e)
+        {
+            lineWidth = 5;
+        }
+
+        private void colorRed(object sender, RoutedEventArgs e)
+        {
+            colorSwitching = System.Drawing.Color.Red;
+        }
+
+        private void colorBlack(object sender, RoutedEventArgs e)
+        {
+            colorSwitching = System.Drawing.Color.Black;
+        }
+
+        private void colorBlue(object sender, RoutedEventArgs e)
+        {
+            colorSwitching = System.Drawing.Color.Blue;
+        }
+
+        private void colorGreen(object sender, RoutedEventArgs e)
+        {
+            colorSwitching = System.Drawing.Color.Green;
         }
 
     }
